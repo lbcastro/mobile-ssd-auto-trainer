@@ -8,4 +8,4 @@ fi
 
 $CAFFE_PATH/build/tools/caffe train -solver="$cur_dir/datasets/$1/solver_train.prototxt" \
 -weights=$weights_file \
--gpu 0
+-gpu 0 2>&1 | tee $cur_dir/datasets/$1/train.log

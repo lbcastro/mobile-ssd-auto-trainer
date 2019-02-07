@@ -28,19 +28,55 @@ labels.insert(0, "background")
 images_paths = []
 annotations_paths = []
 
-for label in labels:
-    label_dir = os.path.join(dataset_root, label)
-    if os.path.isdir(label_dir):
 
-        images_root = os.path.join(label_dir, IMAGES_ROOT)
+import xml.etree.ElementTree as ET
 
-        for image_file in os.listdir(images_root):
-            image_path = os.path.join(images_root, image_file)
-            if not os.path.isfile(image_path):
-                continue
-            images_paths.append(image_path)
-            annotations_paths.append(
-                os.path.splitext(image_path.replace(IMAGES_ROOT, ANNOTATIONS_ROOT))[0] + '.xml')
+def read_content(xml_file: str):
+
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    labels = []
+
+    for boxes in root.iter('object'):
+
+        label = boxes.find('name').text
+        labels.append(label)
+
+    return labels
+
+
+for label_dir in os.listdir(dataset_root):
+
+    label_dir = os.path.join(dataset_root, label_dir)
+    if not os.path.isdir(label_dir):
+        continue
+
+    images_root = os.path.join(label_dir, IMAGES_ROOT)
+
+    for image_file in os.listdir(images_root):
+
+        image_path = os.path.join(images_root, image_file)
+        if not os.path.isfile(image_path):
+            continue
+
+        annotation_path = os.path.splitext(image_path.replace(IMAGES_ROOT, ANNOTATIONS_ROOT))[0] + '.xml'
+        if not os.path.isfile(annotation_path):
+            continue
+
+        current_labels = read_content(annotation_path)
+        skip = False
+        for label in current_labels:
+            if label not in labels:
+                skip = True
+                break
+        if skip:
+            continue
+
+        images_paths.append(image_path)
+        annotations_paths.append(annotation_path)
+
+print(labels)
 
 # Organize folder structure
 now = datetime.datetime.now()
@@ -117,6 +153,11 @@ for label in labels:
     count += 1
 
 labelmap_file.close()
+
+plain_text_labelmap = "labels_" + session + ".txt"
+plain_text_labelmap_file = open(os.path.join(sessions_path, plain_text_labelmap), 'w')
+plain_text_labelmap_file.write('.'.join(labels))
+plain_text_labelmap_file.close()
 
 # Uses the create_data.sh script to create the lmdb
 subprocess.run("chmod +x ./scripts/create_data.sh", shell=True)
