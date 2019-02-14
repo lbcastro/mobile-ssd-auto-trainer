@@ -12,40 +12,43 @@
 #	exit 1
 #fi
 
-cls_num=$1
-cls_num3=$(expr $1 \* 3)
-cls_num6=$(expr $1 \* 6)
+session_dir=$1
+session=$(basename "$1")
+training_dir=$session_dir/training
+root_dir=$(cd $( dirname ${BASH_SOURCE[0]} ) && cd .. && pwd )
 
-cur_dir=$(cd $( dirname ${BASH_SOURCE[0]} ) && cd .. && pwd )
+cls_num=$2
+cls_num3=$(expr $2 \* 3)
+cls_num6=$(expr $2 \* 6)
 
-trainfile=datasets/$2/train.prototxt
-testfile=datasets/$2/test.prototxt
-deployfile=datasets/$2/deploy.prototxt
-solver_train=datasets/$2/solver_train.prototxt
-solver_test=datasets/$2/solver_test.prototxt
+trainfile=$training_dir/train.prototxt
+testfile=$training_dir/test.prototxt
+deployfile=$training_dir/deploy.prototxt
+solver_train=$training_dir/solver_train.prototxt
+solver_test=$training_dir/solver_test.prototxt
 
-cp templates/MobileNetSSD_train_template.prototxt $trainfile
+cp $root_dir/templates/MobileNetSSD_train_template.prototxt $trainfile
 sed -i "s/cls6x/${cls_num6}/g" $trainfile
 sed -i "s/cls3x/${cls_num3}/g" $trainfile
 sed -i "s/cls1x/${cls_num}/g" $trainfile
-sed -i "s|trainval_lmdb|$cur_dir/datasets/$2/lmdb/$2_trainval_lmdb|g" $trainfile
-sed -i "s|labelmap.prototxt|$cur_dir/datasets/$2/labelmap_$2.prototxt|g" $trainfile
+sed -i "s|trainval_lmdb|"$training_dir"/lmdb/"$session"_trainval_lmdb|g" $trainfile
+sed -i "s|labelmap.prototxt|"$training_dir"/labelmap_"$session".prototxt|g" $trainfile
 
-cp templates/MobileNetSSD_test_template.prototxt $testfile
+cp $root_dir/templates/MobileNetSSD_test_template.prototxt $testfile
 sed -i "s/cls6x/${cls_num6}/g" $testfile
 sed -i "s/cls3x/${cls_num3}/g" $testfile
 sed -i "s/cls1x/${cls_num}/g" $testfile
-sed -i "s|test_lmdb|$cur_dir/datasets/$2/lmdb/$2_test_lmdb|g" $testfile
-sed -i "s|labelmap.prototxt|$cur_dir/datasets/$2/labelmap_$2.prototxt|g" $testfile
+sed -i "s|test_lmdb|"$training_dir"/lmdb/"$session"_test_lmdb|g" $testfile
+sed -i "s|labelmap.prototxt|"$training_dir"/labelmap_"$session".prototxt|g" $testfile
 
-cp templates/MobileNetSSD_deploy_template.prototxt $deployfile
+cp $root_dir/templates/MobileNetSSD_deploy_template.prototxt $deployfile
 sed -i "s/cls6x/${cls_num6}/g" $deployfile
 sed -i "s/cls3x/${cls_num3}/g" $deployfile
 sed -i "s/cls1x/${cls_num}/g" $deployfile
 
-mkdir -p datasets/$2/snapshots
+mkdir -p $training_dir/snapshots
 
-cp templates/solver_train.prototxt $solver_train
-sed -i "s|example/MobileNetSSD_train.prototxt|$cur_dir/$trainfile|g" $solver_train
-sed -i "s|example/MobileNetSSD_test.prototxt|$cur_dir/$testfile|g" $solver_train
-sed -i "s|snapshot/mobilenet|$cur_dir/datasets/$2/snapshots/$2|g" $solver_train
+cp $root_dir/templates/solver_train.prototxt $solver_train
+sed -i "s|example/MobileNetSSD_train.prototxt|$trainfile|g" $solver_train
+sed -i "s|example/MobileNetSSD_test.prototxt|$testfile|g" $solver_train
+sed -i "s|snapshot/mobilenet|"$training_dir"/snapshots/"$session"|g" $solver_train

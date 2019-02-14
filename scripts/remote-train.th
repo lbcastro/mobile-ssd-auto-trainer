@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export PYTHONPATH=/opt/intel//computer_vision_sdk_2018.5.445/python/python3.6:/opt/intel//computer_vision_sdk_2018.5.445/python/python3.6/ubuntu16:/opt/intel//computer_vision_sdk_2018.5.445/deployment_tools/model_optimizer:/home/ubuntu/src/cntk/bindings/python:/home/ubuntu/ssd/caffe/python
+export PATH=/home/ubuntu/anaconda3/bin/:/home/ubuntu/bin:/home/ubuntu/.local/bin:/usr/local/bin:/opt/aws/bin:/usr/local/mpi/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+export CAFFE_PATH=~/ssd/caffe/
+
+source activate tensorflow_p36
+
+cur_dir=$(cd $( dirname ${BASH_SOURCE[0]} ) && pwd )
+python3 $cur_dir/train_ssd.py -d $1
